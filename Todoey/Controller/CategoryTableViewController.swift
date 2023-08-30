@@ -15,14 +15,8 @@ class CategoryTableViewController: UITableViewController {
     let realm = try! Realm()
     
     
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
-//    let defaults = UserDefaults.standard
-    
-//    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-    
-    
-    var categories = [Category]()
+    var categories: Results<Category>!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,9 +40,11 @@ class CategoryTableViewController: UITableViewController {
     }
     
     //MARK: - Data Manipulation Methods
-    func saveCategory() {
+    func save(category:Category) {
         do{
-            try context.save()
+            try realm.write{
+                realm.add(category)
+            }
         } catch {
             print("Error in saving category\(error)")
         }
@@ -56,12 +52,9 @@ class CategoryTableViewController: UITableViewController {
     }
     
     func loadCategoies(){
-        let request : NSFetchRequest<Category> = Category.fetchRequest()
-        do{
-            categories = try  context.fetch(request)
-        } catch {
-            print("error londing Categories \(error)")
-        }
+        
+        categories = realm.objects(Category.self)
+        
         tableView.reloadData()
     }
     
@@ -75,11 +68,11 @@ class CategoryTableViewController: UITableViewController {
     
         let action = UIAlertAction(title: "Add Category", style: .default) { action in
             
-            let newCategory = Category(context: self.context)
+            let newCategory = Category()
             newCategory.name = textField.text!
-            self.categories.append(newCategory)
             
-            self.saveCategory()
+            
+            self.save(category: newCategory)
            
         }
         alert.addAction(action)
